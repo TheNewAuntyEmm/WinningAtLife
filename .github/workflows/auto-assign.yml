@@ -21,27 +21,17 @@ jobs:
             const issueOrPr = context.payload.issue ||
               context.payload.pull_request;
             const assignees = ['TheNewAuntyEmm'];
+            const itemType = context.eventName === 'issues' ?
+              'issue' : 'PR';
 
-            if (context.eventName === 'issues') {
-              await github.rest.issues.addAssignees({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: issueOrPr.number,
-                assignees: assignees
-              });
-              console.log(
-                `Assigned issue #${issueOrPr.number} to ` +
-                `${assignees.join(', ')}`
-              );
-            } else if (context.eventName === 'pull_request') {
-              await github.rest.issues.addAssignees({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: issueOrPr.number,
-                assignees: assignees
-              });
-              console.log(
-                `Assigned PR #${issueOrPr.number} to ` +
-                `${assignees.join(', ')}`
-              );
-            }
+            await github.rest.issues.addAssignees({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueOrPr.number,
+              assignees: assignees
+            });
+
+            console.log(
+              `Assigned ${itemType} #${issueOrPr.number} to ` +
+              `${assignees.join(', ')}`
+            );
