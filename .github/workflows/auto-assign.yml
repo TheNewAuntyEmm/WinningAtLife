@@ -20,18 +20,32 @@ jobs:
           script: |
             const issueOrPr = context.payload.issue ||
               context.payload.pull_request;
+
+            if (!issueOrPr) {
+              console.log('No issue or PR found in payload');
+              return;
+            }
+
             const assignees = ['TheNewAuntyEmm'];
             const itemType = context.eventName === 'issues' ?
               'issue' : 'PR';
 
-            await github.rest.issues.addAssignees({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: issueOrPr.number,
-              assignees: assignees
-            });
+            try {
+              await github.rest.issues.addAssignees({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issueOrPr.number,
+                assignees: assignees
+              });
 
-            console.log(
-              `Assigned ${itemType} #${issueOrPr.number} to ` +
-              `${assignees.join(', ')}`
-            );
+              console.log(
+                `Assigned ${itemType} #${issueOrPr.number} to ` +
+                `${assignees.join(', ')}`
+              );
+            } catch (error) {
+              console.error(
+                `Failed to assign ${itemType} #${issueOrPr.number}: ` +
+                `${error.message}`
+              );
+              throw error;
+            }
