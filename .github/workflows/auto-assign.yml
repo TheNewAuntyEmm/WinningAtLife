@@ -1,0 +1,51 @@
+---
+name: Auto Assign
+
+'on':
+  issues:
+    types: [opened]
+  pull_request:
+    types: [opened]
+
+jobs:
+  auto-assign:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Auto-assign issue or PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issueOrPr = context.payload.issue ||
+              context.payload.pull_request;
+
+            if (!issueOrPr) {
+              console.log('No issue or PR found in payload');
+              return;
+            }
+
+            const assignees = ['TheNewAuntyEmm'];
+            const itemType = context.eventName === 'issues' ?
+              'issue' : 'PR';
+
+            try {
+              await github.rest.issues.addAssignees({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issueOrPr.number,
+                assignees: assignees
+              });
+
+              console.log(
+                `Assigned ${itemType} #${issueOrPr.number} to ` +
+                `${assignees.join(', ')}`
+              );
+            } catch (error) {
+              console.error(
+                `Failed to assign ${itemType} #${issueOrPr.number}: ` +
+                `${error.message}`
+              );
+              throw error;
+            }
